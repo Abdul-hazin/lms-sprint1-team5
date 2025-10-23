@@ -17,6 +17,7 @@ public class UserAdminController {
         String hash = Passwords.hash(passwordPlain);
         User u = new User(id, first, last, role, hash, false);
         state.getUsers().put(id, u);
+        state.save();
         return true;
     }
 
@@ -32,6 +33,7 @@ public class UserAdminController {
         User u = state.getUsers().get(id);
         if (u == null) return false;
         u.setSuspended(true);
+        state.save();
         return true;
     }
 
@@ -39,6 +41,8 @@ public class UserAdminController {
         User u = state.getUsers().get(id);
         if (u == null) return false;
         u.setSuspended(false);
+        state.save();
         return true;
     }
+
 }
