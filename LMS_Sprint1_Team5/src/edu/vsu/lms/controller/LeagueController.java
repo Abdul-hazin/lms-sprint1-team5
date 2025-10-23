@@ -27,4 +27,11 @@ public class LeagueController {
         if(lg==null) return List.of();
         return lg.getTeams().keySet().stream().sorted().collect(Collectors.toList());
     }
+    public List<String> listLeagues() {
+        return state.getLeagues()
+                    .keySet()
+                    .stream()
+                    .sorted()
+                    .collect(Collectors.toList());
+    }
 }
