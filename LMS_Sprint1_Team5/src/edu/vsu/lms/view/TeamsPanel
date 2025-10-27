@@ -1,0 +1,67 @@
+import javax.swing.*;
+
+import java.awt.*;
+
+import edu.vsu.lms.controller.LeagueController;
+
+import edu.vsu.lms.persistence.AppState;
+
+ 
+
+public class TeamsPanel extends JPanel {
+
+    private final LeagueController ctrl = new LeagueController();
+
+    private final DefaultListModel<String> model = new DefaultListModel<>();
+
+    private final JList<String> list = new JList<>(model);
+
+    private String activeLeague = AppState.getInstance().getOrInitDefaultLeague();
+
+ 
+
+    public TeamsPanel(){
+
+        setLayout(new BorderLayout(10,10));
+
+        setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+
+        add(new JLabel("League: " + activeLeague), BorderLayout.NORTH);
+
+        add(new JScrollPane(list), BorderLayout.CENTER);
+
+        JButton add = new JButton("Add Team");
+
+        add.addActionListener(e -> onAddTeam());
+
+        add(add, BorderLayout.SOUTH);
+
+        refresh();
+
+    }
+
+    private void onAddTeam(){
+
+        String name = JOptionPane.showInputDialog(this, "Team name:");
+
+        if(name==null) return;
+
+        boolean ok = ctrl.addTeam(activeLeague, name.trim());
+
+        if(!ok) JOptionPane.showMessageDialog(this, "Duplicate or invalid team name.");
+
+        refresh();
+
+    }
+
+    private void refresh(){
+
+        model.clear();
+
+        for(String t : ctrl.listTeams(activeLeague)) model.addElement(t);
+
+    }
+
+}
+
+ 
