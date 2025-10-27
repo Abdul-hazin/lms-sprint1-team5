@@ -3,6 +3,7 @@ package edu.vsu.lms.controller;
 import edu.vsu.lms.persistence.AppState;
 import edu.vsu.lms.model.User;
 import edu.vsu.lms.util.Passwords;
+import edu.vsu.lms.model.Role;
 
 public class AuthController {
 
@@ -30,11 +31,15 @@ public class AuthController {
     }
 
     public boolean adminResetPassword(String userId, String newPlain) {
-        if (currentUser == null || currentUser.getRole() != edu.vsu.lms.model.Role.LA) return false;
+        if (currentUser == null || currentUser.getRole() != Role.LA) return false;
         User u = state.getUsers().get(userId);
         if (u == null) return false;
         if (!Passwords.isStrong(newPlain)) return false;
         u.setPasswordHash(Passwords.hash(newPlain));
         return true;
+    }
+
+    public void logout() {
+        currentUser = null;
     }
 }
