@@ -28,4 +28,5 @@ public class MainFrame extends JFrame {
     private void onLoginSuccess() {
         cards.show(root, "admin");
     }
+    
 }

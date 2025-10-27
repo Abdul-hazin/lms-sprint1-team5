@@ -1,5 +1,10 @@
 package edu.vsu.lms.model;
-public class Team {
+import java.io.*;
+import java.io.Serializable;
+
+public class Team implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
     private final String name;
     private int wins=0, losses=0;
     public Team(String name){ this.name = name; }
