@@ -54,21 +54,16 @@ public class AppState implements Serializable {
 
 
     private static AppState load() {
-        File f = new File(SAVE_FILE);
-        if (f.exists()) {
-            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(SAVE_FILE))) {
-                AppState loaded = (AppState) in.readObject();
-                System.out.println("✅ AppState loaded from " + SAVE_FILE);
-                return loaded;
-            } catch (IOException | ClassNotFoundException e) {
-                System.err.println("⚠️ Error loading saved AppState, starting fresh...");
-                e.printStackTrace();
-            }
-        }
-        // If no file exists, create a new state with defaults
+    try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(SAVE_FILE))) {
+        AppState loaded = (AppState) in.readObject();
+        System.out.println("✅ AppState loaded from file.");
+        return loaded;
+    } catch (IOException | ClassNotFoundException e) {
+        System.out.println("⚠️ No saved AppState found. Starting fresh...");
         AppState fresh = new AppState();
-        fresh.seedDefaults();
-        System.out.println("⚠️ No save file found, created new AppState with defaults.");
+        fresh.seedDefaults(); // only seed on first run
         return fresh;
     }
 }
+}
+
