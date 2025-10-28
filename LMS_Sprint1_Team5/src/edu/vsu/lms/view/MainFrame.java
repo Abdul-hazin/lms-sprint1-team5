@@ -16,54 +16,14 @@ public class MainFrame extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
 
-        // Show something immediately so a window appears even if a panel fails
-        setContentPane(new JLabel("Loading UI...", SwingConstants.CENTER));
+        LoginPanel login = new LoginPanel(auth, this::onLoginSuccess);
+        AdminDashboardPanel admin = new AdminDashboardPanel(auth);
 
-        try {
-            // Build panels (defensive: if a panel throws, show an error panel instead)
-            JComponent login;
-            try {
-                login = new LoginPanel(auth, this::onLoginSuccess);
-            } catch (Exception e) {
-                e.printStackTrace();
-                login = errorPanel("LoginPanel failed", e);
-            }
+        root.add(login, "login");
+        root.add(admin, "admin");
 
-            JComponent admin;
-            try {
-                admin = new AdminDashboardPanel(auth, this::onLogout);
-            } catch (Exception e) {
-                e.printStackTrace();
-                admin = errorPanel("AdminDashboardPanel failed", e);
-            }
-
-            // No named args; just the card name strings
-            root.add(login, "login");
-            root.add(admin, "admin");
-
-            setContentPane(root);
-            cards.show(root, "login");
-        } catch (Throwable t) {
-            t.printStackTrace();
-            setContentPane(errorPanel("MainFrame init failed", t));
-        }
-    }
-
-    // Helper panel to display UI errors with stack trace
-    private JPanel errorPanel(String title, Throwable t) {
-        JPanel p = new JPanel(new BorderLayout());
-        p.add(new JLabel("⚠️ " + title, SwingConstants.CENTER), BorderLayout.NORTH);
-
-        JTextArea area = new JTextArea();
-        area.append(t.toString());
-        for (StackTraceElement el : t.getStackTrace()) {
-            area.append("\n    at " + el);
-        }
-        area.setEditable(false);
-        area.setLineWrap(false);
-
-        p.add(new JScrollPane(area), BorderLayout.CENTER);
-        return p;
+        setContentPane(root);
+        cards.show(root, "login");
     }
 
     private void onLoginSuccess() {

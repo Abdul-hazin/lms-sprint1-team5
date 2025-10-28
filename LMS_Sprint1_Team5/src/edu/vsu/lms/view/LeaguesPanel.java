@@ -43,4 +43,3 @@ public class LeaguesPanel extends JPanel {
         }
     }
 }
-
