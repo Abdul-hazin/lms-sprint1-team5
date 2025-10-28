@@ -66,4 +66,3 @@ public class AppState implements Serializable {
     }
 }
 }
-
