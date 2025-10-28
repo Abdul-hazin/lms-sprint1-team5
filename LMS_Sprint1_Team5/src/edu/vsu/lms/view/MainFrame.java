@@ -2,6 +2,7 @@ package edu.vsu.lms.view;
 
 import javax.swing.*;
 import java.awt.*;
+
 import edu.vsu.lms.controller.AuthController;
 
 public class MainFrame extends JFrame {
@@ -19,7 +20,7 @@ public class MainFrame extends JFrame {
         setContentPane(new JLabel("Loading UI...", SwingConstants.CENTER));
 
         try {
-            // Use JComponent so we can assign either a real panel or an error panel
+            // Build panels (defensive: if a panel throws, show an error panel instead)
             JComponent login;
             try {
                 login = new LoginPanel(auth, this::onLoginSuccess);
@@ -36,6 +37,7 @@ public class MainFrame extends JFrame {
                 admin = errorPanel("AdminDashboardPanel failed", e);
             }
 
+            // No named args; just the card name strings
             root.add(login, "login");
             root.add(admin, "admin");
 
@@ -47,7 +49,7 @@ public class MainFrame extends JFrame {
         }
     }
 
-    // Helper panel to display UI errors
+    // Helper panel to display UI errors with stack trace
     private JPanel errorPanel(String title, Throwable t) {
         JPanel p = new JPanel(new BorderLayout());
         p.add(new JLabel("⚠️ " + title, SwingConstants.CENTER), BorderLayout.NORTH);
@@ -72,4 +74,3 @@ public class MainFrame extends JFrame {
         cards.show(root, "login");
     }
 }
-
