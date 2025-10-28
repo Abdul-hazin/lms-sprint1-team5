@@ -44,5 +44,26 @@ public class UserAdminController {
         state.save();
         return true;
     }
+    public boolean deleteUser(String userId) {
+        var state = edu.vsu.lms.persistence.AppState.getInstance();
+        if (userId == null || userId.isBlank()) return false;
+    
+        // don't allow deleting a non-existent user
+        var users = state.getUsers();
+        var u = users.get(userId);
+        if (u == null) return false;
+    
+        // optional safety: don't allow deleting the last League Admin
+        long admins = users.values().stream()
+                .filter(x -> x.getRole() == edu.vsu.lms.model.Role.LA)
+                .count();
+        if (u.getRole() == edu.vsu.lms.model.Role.LA && admins <= 1) {
+            return false;
+        }
+    
+        users.remove(userId);
+        state.save();
+        return true;
+    }
 
 }
