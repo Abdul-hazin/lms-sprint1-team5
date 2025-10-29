@@ -1,5 +1,6 @@
 package edu.vsu.lms.view;
 
+import edu.vsu.lms.persistence.AppState;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
