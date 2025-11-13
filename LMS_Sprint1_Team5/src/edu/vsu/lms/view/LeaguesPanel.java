@@ -10,10 +10,22 @@ public class LeaguesPanel extends JPanel {
     private final LeagueController ctrl = new LeagueController();
     private final DefaultListModel<String> model = new DefaultListModel<>();
     private final JList<String> list = new JList<>(model);
+    private final boolean readOnly;
 
+    // 🧩 Default constructor (editable)
     public LeaguesPanel() {
-        setLayout(new BorderLayout(10,10));
-        setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        this(false);
+    }
+
+    // 🧩 Read-only or editable constructor
+    public LeaguesPanel(boolean readOnly) {
+        this.readOnly = readOnly;
+        initUI();
+    }
+
+    private void initUI() {
+        setLayout(new BorderLayout(10, 10));
+        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Header
         JLabel header = new JLabel("Leagues");
@@ -23,19 +35,32 @@ public class LeaguesPanel extends JPanel {
         // Center list
         add(new JScrollPane(list), BorderLayout.CENTER);
 
+        // Bottom control buttons
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         JButton add = new JButton("Add League");
-        JButton delete = new JButton("Delete Selected"); // 🆕 new delete button
+        JButton delete = new JButton("Delete Selected");
         bottom.add(add);
         bottom.add(delete);
         add(bottom, BorderLayout.SOUTH);
 
-        add.addActionListener(e -> onAddLeague());
-        delete.addActionListener(e -> onDeleteLeague()); // 🆕 action
+        // Hide or disable buttons in read-only mode
+        if (readOnly) {
+            add.setVisible(false);
+            delete.setVisible(false);
+        } else {
+            add.addActionListener(e -> onAddLeague());
+            delete.addActionListener(e -> onDeleteLeague());
+        }
 
         refresh();
     }
 
+    /** Returns the currently selected league name or null if none. */
+    public String getSelectedLeague() {
+        return list.getSelectedValue();
+    }
+
+    // === CRUD methods (only used when editable) ===
     private void onAddLeague() {
         String name = JOptionPane.showInputDialog(this, "League name:");
         if (name == null || name.isBlank()) return;
@@ -59,7 +84,8 @@ public class LeaguesPanel extends JPanel {
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(this,
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
                 "Are you sure you want to delete the league '" + selected + "'?",
                 "Confirm Delete",
                 JOptionPane.YES_NO_OPTION,
@@ -71,7 +97,8 @@ public class LeaguesPanel extends JPanel {
         League league = state.getLeagues().remove(selected);
         if (league != null) {
             state.save();
-            JOptionPane.showMessageDialog(this, "League '" + selected + "' deleted successfully.");
+            JOptionPane.showMessageDialog(this,
+                    "League '" + selected + "' deleted successfully.");
         } else {
             JOptionPane.showMessageDialog(this, "Failed to delete league.");
         }
@@ -81,9 +108,12 @@ public class LeaguesPanel extends JPanel {
 
     private void refresh() {
         model.clear();
-        var leagues = AppState.getInstance().getLeagues().keySet().stream()
+        var leagues = AppState.getInstance().getLeagues()
+                .keySet()
+                .stream()
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .toList();
+
         for (String leagueName : leagues) {
             model.addElement(leagueName);
         }

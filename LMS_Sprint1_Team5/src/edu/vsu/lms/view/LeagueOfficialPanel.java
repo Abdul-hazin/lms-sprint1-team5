@@ -31,7 +31,7 @@ public class LeagueOfficialPanel extends JPanel {
         // ⚙️ Buttons
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         JButton btnAddTeam = new JButton("Add Team");
-        JButton btnViewPlayers = new JButton("View Team Players");
+        JButton btnViewPlayers = new JButton("Players");
         JButton btnViewLeaguePlayers = new JButton("View All League Players");
         JButton btnLogout = new JButton("Logout"); // 🆕 logout button
 
