@@ -11,15 +11,23 @@ import java.util.List;
 public class PlayersPanel extends JPanel {
     private final String leagueName;
     private final String teamName;
+    private final boolean readOnly;               // <<< NEW
     private final PlayerController ctrl = new PlayerController();
 
     private final DefaultListModel<String> model = new DefaultListModel<>();
     private final JList<String> list = new JList<>(model);
     private JComboBox<String> sortBox;
 
+    // Keep your original 2-arg ctor for existing callers
     public PlayersPanel(String leagueName, String teamName) {
+        this(leagueName, teamName, false);
+    }
+
+    // NEW: read-only toggle
+    public PlayersPanel(String leagueName, String teamName, boolean readOnly) {
         this.leagueName = leagueName;
         this.teamName = teamName;
+        this.readOnly = readOnly;
 
         setLayout(new BorderLayout(10,10));
         setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
@@ -48,17 +56,23 @@ public class PlayersPanel extends JPanel {
         JButton edit = new JButton("Edit Player");
         JButton delete = new JButton("Delete Player");
         JButton move = new JButton("Move Player");
-        bottom.add(add);
-        bottom.add(edit);
-        bottom.add(delete);
-        bottom.add(move);
+
+        // If read-only, hide the whole button row
+        if (!readOnly) {
+            bottom.add(add);
+            bottom.add(edit);
+            bottom.add(delete);
+            bottom.add(move);
+        }
         add(bottom, BorderLayout.SOUTH);
 
         // Actions
-        add.addActionListener(e -> onAddPlayer());
-        edit.addActionListener(e -> onEditPlayer());
-        delete.addActionListener(e -> onDeletePlayer());
-        move.addActionListener(e -> onMovePlayer());
+        if (!readOnly) {
+            add.addActionListener(e -> onAddPlayer());
+            edit.addActionListener(e -> onEditPlayer());
+            delete.addActionListener(e -> onDeletePlayer());
+            move.addActionListener(e -> onMovePlayer());
+        }
         btnSort.addActionListener(e -> refresh());
 
         refresh();
@@ -66,30 +80,42 @@ public class PlayersPanel extends JPanel {
 
     private void refresh() {
         model.clear();
-        List<Player> players = ctrl.listPlayers(leagueName, teamName);
+
+        // Copy to a modifiable list
+        List<Player> players = new ArrayList<>(ctrl.listPlayers(leagueName, teamName));
 
         String sortBy = (String) sortBox.getSelectedItem();
         Comparator<Player> comparator;
 
         switch (Objects.requireNonNull(sortBy)) {
             case "Position":
-                comparator = Comparator.comparing(Player::getPosition, String.CASE_INSENSITIVE_ORDER)
-                                       .thenComparing(Player::getLastName, String.CASE_INSENSITIVE_ORDER);
+                comparator = Comparator
+                        .comparing((Player x) -> {
+                            String pos = x.getPosition();
+                            return pos == null ? "" : pos;
+                        }, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Player::getLastName, String.CASE_INSENSITIVE_ORDER);
                 break;
             case "Number":
                 comparator = Comparator.comparingInt(Player::getNumber);
                 break;
             default: // Last Name
-                comparator = Comparator.comparing(Player::getLastName, String.CASE_INSENSITIVE_ORDER)
-                                       .thenComparing(Player::getFirstName, String.CASE_INSENSITIVE_ORDER);
+                comparator = Comparator
+                        .comparing(Player::getLastName, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(Player::getFirstName, String.CASE_INSENSITIVE_ORDER);
         }
 
         players.sort(comparator);
+
         for (Player p : players) {
             model.addElement(String.format("%s %s — %s (#%d)",
-                    p.getFirstName(), p.getLastName(), p.getPosition(), p.getNumber()));
+                    p.getFirstName(), p.getLastName(),
+                    p.getPosition() == null ? "" : p.getPosition(),
+                    p.getNumber()));
         }
     }
+
+    // --- The following handlers are unchanged functionally; they simply won't be wired in readOnly mode ---
 
     private void onAddPlayer() {
         JTextField first = new JTextField();
@@ -148,6 +174,7 @@ public class PlayersPanel extends JPanel {
 
         try {
             int number = Integer.parseInt(numberField.getText().trim());
+            // use controller update (safer) if you adopted it; otherwise this direct approach:
             p.setFirstName(first.getText().trim());
             p.setLastName(last.getText().trim());
             p.setPosition(position.getText().trim());
@@ -197,7 +224,6 @@ public class PlayersPanel extends JPanel {
         Player p = findByDisplayString(selected, sourceTeam.getPlayers());
         if (p == null) return;
 
-        // choose new team
         String[] teams = league.getTeams().keySet().stream()
                 .filter(t -> !t.equals(teamName))
                 .sorted(String.CASE_INSENSITIVE_ORDER)
