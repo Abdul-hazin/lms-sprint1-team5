@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+import java.util.List;
+
 import edu.vsu.lms.controller.AuthController;
 import edu.vsu.lms.controller.UserAdminController;
 import edu.vsu.lms.model.Role;
@@ -12,18 +14,27 @@ import edu.vsu.lms.model.User;
 public class AdminDashboardPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
+    private static final long serialVersionUID = 1L;
+
     private final AuthController auth;
     private final UserAdminController userAdmin = new UserAdminController();
     private final DefaultListModel<String> usersModel = new DefaultListModel<>();
     private final JList<String> usersList = new JList<>(usersModel);
     private final Runnable onLogout;
+    private final Runnable onLogout;
 
+    public AdminDashboardPanel(AuthController auth, Runnable onLogout) {
     public AdminDashboardPanel(AuthController auth, Runnable onLogout) {
         this.auth = auth;
         this.onLogout = onLogout;
         setLayout(new BorderLayout(10,10));
         setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        this.onLogout = onLogout;
+        setLayout(new BorderLayout(10,10));
+        setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
+        // Header
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         // Header
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         JLabel hello = new JLabel("Logged in as: " + (auth.getCurrentUser() != null ? auth.getCurrentUser().toString() : "?"));
@@ -35,12 +46,24 @@ public class AdminDashboardPanel extends JPanel {
         JButton btnResults = new JButton("Record Result");
        
 
+        JButton btnLeagues = new JButton("Leagues…");
+        JButton btnTeams = new JButton("Teams…"); // ✅ Added back
+        JButton btnSchedule = new JButton("Schedule...");
+        JButton btnResults = new JButton("Record Result");
+       
+
         top.add(hello);
         top.add(btnRefresh);
         top.add(btnAdd);
         top.add(btnLeagues);
         top.add(btnTeams);
+        top.add(btnLeagues);
+        top.add(btnTeams);
         add(top, BorderLayout.NORTH);
+        top.add(btnSchedule);
+        top.add(btnResults);
+
+        // Users list in the center
         top.add(btnSchedule);
         top.add(btnResults);
 
@@ -164,6 +187,7 @@ deleteBtn.addActionListener(e -> {
         JPasswordField pw = new JPasswordField();
 
         JPanel p = new JPanel(new GridLayout(0, 1));
+        JPanel p = new JPanel(new GridLayout(0, 1));
         p.add(new JLabel("ID:")); p.add(id);
         p.add(new JLabel("First:")); p.add(first);
         p.add(new JLabel("Last:")); p.add(last);
@@ -179,7 +203,16 @@ deleteBtn.addActionListener(e -> {
                 (Role) role.getSelectedItem(),
                 new String(pw.getPassword())
             );
+            boolean added = userAdmin.addUser(
+                id.getText().trim(),
+                first.getText().trim(),
+                last.getText().trim(),
+                (Role) role.getSelectedItem(),
+                new String(pw.getPassword())
+            );
             if (!added) {
+                JOptionPane.showMessageDialog(this,
+                    "Failed to add user. Check duplicate ID or password policy (≥6 chars, upper/lower/digit/special).");
                 JOptionPane.showMessageDialog(this,
                     "Failed to add user. Check duplicate ID or password policy (≥6 chars, upper/lower/digit/special).");
             } else {
