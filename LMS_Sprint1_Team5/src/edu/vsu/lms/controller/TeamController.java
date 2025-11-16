@@ -1,53 +1,49 @@
 package edu.vsu.lms.controller;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import edu.vsu.lms.model.League;
 import edu.vsu.lms.model.Team;
 import edu.vsu.lms.persistence.AppState;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 /**
  * TeamController
  * --------------
- * League-scoped team management used by TeamsPanel.
+ * Simple league-scoped team management used by TeamsPanel.
  */
 public class TeamController {
 
-    private final AppState app = AppState.getInstance();
+    private final AppState state = AppState.getInstance();
 
-    // ----- helpers -----
-
-    private League ensureLeague(String leagueName) {
-        if (leagueName == null || leagueName.isBlank()) {
-            leagueName = app.getOrInitDefaultLeague();
-        }
-        return app.getLeagues().computeIfAbsent(leagueName, League::new);
+    /** Get a league by name, or null if it doesn't exist. */
+    private League getLeague(String leagueName) {
+        if (leagueName == null || leagueName.isBlank()) return null;
+        return state.getLeagues().get(leagueName);
     }
-
-    private Optional<League> getLeague(String leagueName) {
-        if (leagueName == null || leagueName.isBlank()) {
-            leagueName = app.getOrInitDefaultLeague();
-        }
-        return Optional.ofNullable(app.getLeagues().get(leagueName));
-    }
-
-    // ----- API used by TeamsPanel -----
 
     /** List teams in a league, sorted by name (case-insensitive). */
     public List<Team> listTeams(String leagueName) {
-        return getLeague(leagueName)
-                .map(l -> l.getTeams().values().stream()
-                        .sorted(Comparator.comparing(Team::getName, String.CASE_INSENSITIVE_ORDER))
-                        .collect(Collectors.toList()))
-                .orElseGet(ArrayList::new);
+        League league = getLeague(leagueName);
+        if (league == null) {
+            return Collections.emptyList();
+        }
+
+        return league.getTeams()
+                .values()
+                .stream()
+                .sorted((a, b) -> a.getName().compareToIgnoreCase(b.getName()))
+                .collect(Collectors.toList());
     }
 
-    /** Create a team in the given league. Returns false if duplicate or invalid. */
+    /** Create a team in the given league. Returns false if league missing, duplicate, or invalid name. */
     public boolean createTeam(String leagueName, String teamName) {
         if (!isValidTeamName(teamName)) return false;
 
-        League league = ensureLeague(leagueName);
+        League league = getLeague(leagueName);
+        if (league == null) return false;
+
         Map<String, Team> teams = league.getTeams();
 
         // Prevent duplicate name (case-insensitive)
@@ -56,15 +52,19 @@ public class TeamController {
         if (exists) return false;
 
         teams.put(teamName, new Team(teamName));
-        app.save();
+        state.save();
         return true;
     }
 
-    /** Delete a team from the given league. */
+    /** Delete a team from the given league. Returns true if deleted. */
     public boolean deleteTeam(String leagueName, String teamName) {
-        League league = ensureLeague(leagueName);
+        League league = getLeague(leagueName);
+        if (league == null) return false;
+
         boolean removed = (league.getTeams().remove(teamName) != null);
-        if (removed) app.save();
+        if (removed) {
+            state.save();
+        }
         return removed;
     }
 
@@ -78,10 +78,11 @@ public class TeamController {
         return createTeam(leagueName, teamName);
     }
 
-    // ----- validation (mirrors TeamsPanel pattern) -----
+    // ----- validation (same pattern as TeamsPanel) -----
 
     private boolean isValidTeamName(String name) {
         // 3–30 chars; letters, digits, spaces, dash, apostrophe, ampersand
         return name != null && name.matches("[A-Za-z0-9 '\\-&]{3,30}");
     }
 }
+

@@ -21,7 +21,7 @@ public class TeamOfficialPanel extends JPanel {
     private TeamsPanel teamsPanel;                 // read-only teams (opens Players dialog)
     private LeaguePlayersPanel leaguePlayersPanel; // all players in league
     private LeaguesPanel leaguesPanel;             // read-only leagues list (optional)
-    private SchedulePanel schedulePanel;           // NEW: view-only schedule
+    private SchedulePanel schedulePanel;           // view-only schedule
 
     public TeamOfficialPanel(Runnable onLogout) {
         this.onLogout = onLogout;
@@ -58,7 +58,7 @@ public class TeamOfficialPanel extends JPanel {
         JButton btnLeagues = new JButton("View Leagues");
         JButton btnTeams = new JButton("View Teams");
         JButton btnLeaguePlayers = new JButton("View League Players");
-        JButton btnSchedule = new JButton("View Schedule"); // NEW
+        JButton btnSchedule = new JButton("View Schedule");
 
         sidebar.add(btnLeagues);
         sidebar.add(btnTeams);
@@ -69,33 +69,36 @@ public class TeamOfficialPanel extends JPanel {
         // ---- Content ----
         add(contentPanel, BorderLayout.CENTER);
 
-        String defaultLeague = appState.getOrInitDefaultLeague();
+        String defaultLeague = getFirstLeagueOrNull();
         populateLeagueBox(defaultLeague);
 
         // Panels (read-only)
-        teamsPanel = new TeamsPanel(true, true);  // hides internal league controls (embedded)
-        teamsPanel.loadTeamsForLeague(defaultLeague);
+        teamsPanel = new TeamsPanel(true, true);  // read-only; embeddedMode currently ignored
+        if (defaultLeague != null) {
+            teamsPanel.loadTeamsForLeague(defaultLeague);
+        }
         contentPanel.add(teamsPanel, "TEAMS");
 
-// League-wide players view
+        // League-wide players view
         leaguePlayersPanel = new LeaguePlayersPanel(defaultLeague);
         contentPanel.add(leaguePlayersPanel, "LEAGUE_PLAYERS");
 
-        try { leaguesPanel = new LeaguesPanel(true); }
-        catch (Throwable t) { leaguesPanel = new LeaguesPanel(); }
+        try {
+            leaguesPanel = new LeaguesPanel(true);
+        } catch (Throwable t) {
+            leaguesPanel = new LeaguesPanel();
+        }
 
-        schedulePanel = new SchedulePanel(defaultLeague); // NEW
+        schedulePanel = new SchedulePanel(defaultLeague);
 
         contentPanel.add(leaguesPanel, "LEAGUES");
-        contentPanel.add(teamsPanel, "TEAMS");
-        contentPanel.add(leaguePlayersPanel, "LEAGUE_PLAYERS");
-        contentPanel.add(schedulePanel, "SCHEDULE");       // NEW
+        contentPanel.add(schedulePanel, "SCHEDULE");
 
         // Nav actions
         btnLeagues.addActionListener(e -> cardLayout.show(contentPanel, "LEAGUES"));
         btnTeams.addActionListener(e -> cardLayout.show(contentPanel, "TEAMS"));
         btnLeaguePlayers.addActionListener(e -> cardLayout.show(contentPanel, "LEAGUE_PLAYERS"));
-        btnSchedule.addActionListener(e -> cardLayout.show(contentPanel, "SCHEDULE")); // NEW
+        btnSchedule.addActionListener(e -> cardLayout.show(contentPanel, "SCHEDULE"));
 
         // League switching syncs all cards
         leagueBox.addActionListener(e -> {
@@ -105,6 +108,14 @@ public class TeamOfficialPanel extends JPanel {
 
         // Default view
         cardLayout.show(contentPanel, "TEAMS");
+    }
+
+    /** Get the first league name (alphabetically), or null if none exist. */
+    private String getFirstLeagueOrNull() {
+        return appState.getLeagues().keySet().stream()
+                .sorted(String::compareToIgnoreCase)
+                .findFirst()
+                .orElse(null);
     }
 
     /** Populate the league dropdown and select a preferred league. */
@@ -158,3 +169,4 @@ public class TeamOfficialPanel extends JPanel {
         }
     }
 }
+

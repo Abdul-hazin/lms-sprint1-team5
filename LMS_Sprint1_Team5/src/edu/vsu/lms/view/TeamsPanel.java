@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -23,7 +23,6 @@ public class TeamsPanel extends JPanel {
     private final JList<String> list = new JList<>(model);
 
     private final boolean readOnly;
-    private final boolean embeddedMode; // <<< NEW
 
     private String currentLeague;
     private String filterText = "";
@@ -32,23 +31,35 @@ public class TeamsPanel extends JPanel {
     private JLabel headerLabel;
     private JButton addBtn, deleteBtn, refreshBtn, reloadLeaguesBtn, playersBtn;
     private JComboBox<String> leagueBox;
-    private JPanel headerRight; // <<< NEW: container for internal league controls
+    private JPanel headerRight;
 
-    // --- Constructors ---
-    public TeamsPanel() { this(false, false); }
-    public TeamsPanel(boolean readOnly) { this(readOnly, false); }
-    /** @param readOnly hide Add/Delete; @param embeddedMode hide internal league controls */
-    public TeamsPanel(boolean readOnly, boolean embeddedMode) {
-        this.readOnly = readOnly;
-        this.embeddedMode = embeddedMode;
-        initUI();
-        String defaultLeague = AppState.getInstance().getOrInitDefaultLeague();
-        populateLeagueBox(defaultLeague);
-        loadTeamsForLeague(defaultLeague);
+    // ---------- CONSTRUCTORS ----------
 
-        // Hide internal league controls when embedded in a parent that provides them.
-        if (embeddedMode) setHeaderControlsVisible(false);
+    public TeamsPanel() {
+        this(false);
     }
+
+    public TeamsPanel(boolean readOnly) {
+        this.readOnly = readOnly;
+        initUI();
+        populateLeagueBox(null);
+
+        // If there is at least one league, select first and load teams
+        if (leagueBox.getItemCount() > 0) {
+            String firstLeague = (String) leagueBox.getItemAt(0);
+            loadTeamsForLeague(firstLeague);
+        } else {
+            currentLeague = null;
+            refresh(false);
+        }
+    }
+
+    // 👇 compatibility constructor for TeamOfficialPanel
+    public TeamsPanel(boolean readOnly, boolean embeddedMode) {
+        this(readOnly);     // we currently ignore embeddedMode
+    }
+
+    // ---------- UI SETUP ----------
 
     private void initUI() {
         setLayout(new BorderLayout(10, 10));
@@ -59,7 +70,7 @@ public class TeamsPanel extends JPanel {
         headerLabel = new JLabel("Teams");
         headerLabel.setFont(headerLabel.getFont().deriveFont(Font.BOLD, 16f));
 
-        headerRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0)); // <<< keep a handle
+        headerRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         headerRight.add(new JLabel("League:"));
         leagueBox = new JComboBox<>();
         leagueBox.setPrototypeDisplayValue("Select a league with a long name");
@@ -100,14 +111,16 @@ public class TeamsPanel extends JPanel {
                 return lbl;
             }
         });
+
         // Double-click to open Players
-        list.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) {
+        list.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
                     onViewPlayers();
                 }
             }
         });
+
         // Enable/disable Players button based on selection
         list.addListSelectionListener(e -> updateButtonsForSelection());
 
@@ -136,24 +149,33 @@ public class TeamsPanel extends JPanel {
         playersBtn.addActionListener(e -> onViewPlayers());
 
         leagueBox.addActionListener(e -> {
-            if (embeddedMode) return; // parent controls league selection
             String selected = (String) leagueBox.getSelectedItem();
             if (selected != null && !selected.isBlank() && !selected.equals(currentLeague)) {
                 loadTeamsForLeague(selected);
             }
         });
-        reloadLeaguesBtn.addActionListener(e -> populateLeagueBox(currentLeague));
+
+        reloadLeaguesBtn.addActionListener(e -> {
+            populateLeagueBox(currentLeague);
+            if (currentLeague != null) {
+                loadTeamsForLeague(currentLeague);
+            }
+        });
 
         // Delete key
-        list.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "deleteTeam");
+        list.getInputMap(JComponent.WHEN_FOCUSED).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0),
+                "deleteTeam");
         list.getActionMap().put("deleteTeam", new AbstractAction() {
             @Override public void actionPerformed(java.awt.event.ActionEvent e) {
                 if (!readOnly) onDeleteTeam();
             }
         });
+
         // Ctrl+N add
         list.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
+                KeyStroke.getKeyStroke(KeyEvent.VK_N,
+                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()),
                 "addTeam");
         list.getActionMap().put("addTeam", new AbstractAction() {
             @Override public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -163,6 +185,8 @@ public class TeamsPanel extends JPanel {
 
         updateButtonsForSelection();
     }
+
+    // ---------- HELPERS ----------
 
     private void updateButtonsForSelection() {
         boolean hasTeam = getSelectedTeam() != null;
@@ -191,18 +215,18 @@ public class TeamsPanel extends JPanel {
         }
     }
 
-    // --- Public / main flow ---
+    // ---------- MAIN FLOW ----------
 
-    /** Parent should call this when the league changes (or the internal combo will if not embedded). */
+    /** Load teams for a given league name. */
     public void loadTeamsForLeague(String leagueName) {
         currentLeague = (leagueName == null || leagueName.isBlank()) ? null : leagueName.trim();
         updateHeader();
 
-        // Keep internal combo synced even if hidden (for consistency).
-        if (!embeddedMode && currentLeague != null &&
-            (leagueBox.getSelectedItem() == null || !currentLeague.equals(leagueBox.getSelectedItem()))) {
+        if (currentLeague != null &&
+                (leagueBox.getSelectedItem() == null || !currentLeague.equals(leagueBox.getSelectedItem()))) {
             leagueBox.setSelectedItem(currentLeague);
         }
+
         refresh(false);
     }
 
@@ -272,7 +296,9 @@ public class TeamsPanel extends JPanel {
             return;
         }
 
-        JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this), "Players — " + team, Dialog.ModalityType.APPLICATION_MODAL);
+        JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
+                "Players — " + team,
+                Dialog.ModalityType.APPLICATION_MODAL);
         d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         d.setContentPane(new PlayersPanel(currentLeague, team, this.readOnly));
         d.pack();
@@ -332,12 +358,6 @@ public class TeamsPanel extends JPanel {
         updateButtonsForSelection();
     }
 
-    private void setHeaderControlsVisible(boolean visible) { // <<< NEW
-        if (headerRight != null) headerRight.setVisible(visible);
-        revalidate();
-        repaint();
-    }
-
     private boolean isValidTeamName(String name) {
         return name != null && name.matches("[A-Za-z0-9 '\\-&]{3,30}");
     }
@@ -368,9 +388,17 @@ public class TeamsPanel extends JPanel {
         return (v == null || isPlaceholder(v)) ? null : v;
     }
 
-    protected String getCurrentLeague() { return currentLeague; }
+    protected String getCurrentLeague() {
+        return currentLeague;
+    }
 
-    public void forceRefresh() { refresh(true); }
+    public void forceRefresh() {
+        refresh(true);
+    }
 
-    public void forceReloadLeagues() { populateLeagueBox(currentLeague); }
+    public void forceReloadLeagues() {
+        populateLeagueBox(currentLeague);
+    }
 }
+
+

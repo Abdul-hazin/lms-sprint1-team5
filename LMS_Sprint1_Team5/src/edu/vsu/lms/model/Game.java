@@ -34,6 +34,20 @@ public class Game implements Serializable {
     public boolean hasResult() {
     return winner != null;
 }
+public String getLoser() {
+    if (winner == null) return null;
+    return winner.equals(homeTeam) ? awayTeam : homeTeam;
+}
+
+public int getWinningScore() {
+    if (winner == null) return 0;
+    return winner.equals(homeTeam) ? homeScore : awayScore;
+}
+
+public int getLosingScore() {
+    if (winner == null) return 0;
+    return winner.equals(homeTeam) ? awayScore : homeScore;
+}
 
 
     @Override
