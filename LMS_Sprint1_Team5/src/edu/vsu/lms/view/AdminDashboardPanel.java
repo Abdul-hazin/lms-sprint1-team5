@@ -3,11 +3,15 @@ package edu.vsu.lms.view;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.io.File;
 
 import edu.vsu.lms.controller.AuthController;
 import edu.vsu.lms.controller.UserAdminController;
 import edu.vsu.lms.model.Role;
 import edu.vsu.lms.model.User;
+import edu.vsu.lms.model.League;
+import edu.vsu.lms.persistence.AppState;
+import edu.vsu.lms.persistence.LeagueXmlLoader;
 
 public class AdminDashboardPanel extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -25,17 +29,21 @@ public class AdminDashboardPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        /* ---------- HEADER ---------- */
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        /* ========== HEADER (TOP) ========== */
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 5));
+
         JLabel hello = new JLabel("Logged in as: " +
                 (auth.getCurrentUser() != null ? auth.getCurrentUser().toString() : "?"));
-        JButton btnRefresh = new JButton("Refresh Users");
-        JButton btnAdd = new JButton("Add User");
-        JButton btnLeagues = new JButton("Leagues…");
-        JButton btnTeams = new JButton("Teams…");
-        JButton btnSchedule = new JButton("Schedule...");
-        JButton btnResults = new JButton("Record Result");
-        JButton btnStandings = new JButton("Standings...");     // NEW
+
+        JButton btnRefresh       = new JButton("Refresh Users");
+        JButton btnAdd           = new JButton("Add User");
+        JButton btnLeagues       = new JButton("Leagues…");
+        JButton btnTeams         = new JButton("Teams…");
+        JButton btnSchedule      = new JButton("Schedule...");
+        JButton btnResults       = new JButton("Record Result");
+        JButton btnStandings     = new JButton("Standings…");     // 👈 US16 button
+        JButton btnUpcoming      = new JButton("Upcoming Games");
+        JButton btnLoadLeagueXml = new JButton("Load League XML"); // Jamare’s feature
 
         top.add(hello);
         top.add(btnRefresh);
@@ -44,39 +52,47 @@ public class AdminDashboardPanel extends JPanel {
         top.add(btnTeams);
         top.add(btnSchedule);
         top.add(btnResults);
-        top.add(btnStandings);                                  // NEW
+        top.add(btnStandings);   // add standings button to header
+        top.add(btnUpcoming);
         add(top, BorderLayout.NORTH);
 
-        /* ---------- CENTER: USERS LIST ---------- */
+        /* ========== CENTER: USERS LIST ========== */
         add(new JScrollPane(usersList), BorderLayout.CENTER);
 
-        /* ---------- FOOTER ---------- */
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton btnUpcoming = new JButton("Upcoming Games");
+        /* ========== FOOTER (BOTTOM) ========== */
+        JButton btnLogout = new JButton("Logout");
         JButton deleteBtn = new JButton("Delete");
         deleteBtn.setForeground(Color.RED);
-        JButton btnLogout = new JButton("Logout");
 
-        bottom.add(deleteBtn);
-        bottom.add(btnUpcoming);
-        bottom.add(btnLogout);
+        JPanel bottom = new JPanel(new BorderLayout());
+
+        // left: Load XML
+        JPanel leftBottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        leftBottom.add(btnLoadLeagueXml);
+
+        // right: Delete, Upcoming, Logout
+        JPanel rightBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightBottom.add(deleteBtn);
+        rightBottom.add(btnUpcoming);
+        rightBottom.add(btnLogout);
+
+        bottom.add(leftBottom, BorderLayout.WEST);
+        bottom.add(rightBottom, BorderLayout.EAST);
+
         add(bottom, BorderLayout.SOUTH);
 
-        /* ---------- EVENT LISTENERS ---------- */
+        /* ========== EVENT LISTENERS ========== */
 
-        // refresh users
         btnRefresh.addActionListener(e -> refreshUsers());
-
-        // add user dialog
         btnAdd.addActionListener(e -> showAddUserDialog());
-
-        // leagues dialog
         btnLeagues.addActionListener(e -> showLeaguesDialog());
-
-        // teams dialog
         btnTeams.addActionListener(e -> showTeamsDialog());
+        btnSchedule.addActionListener(e -> showScheduleDialog());
+        btnResults.addActionListener(e -> showRecordResultDialog());
+        btnUpcoming.addActionListener(e -> showUpcomingGamesDialog());
+        btnStandings.addActionListener(e -> showStandingsDialog());    // 👈 US16 handler
+        btnLoadLeagueXml.addActionListener(e -> loadLeagueFromXml());
 
-        // logout
         btnLogout.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Are you sure you want to log out?",
@@ -87,70 +103,7 @@ public class AdminDashboardPanel extends JPanel {
             }
         });
 
-        // schedule dialog
-        btnSchedule.addActionListener(e -> {
-            String league = JOptionPane.showInputDialog(this, "Enter League Name:");
-            if (league == null || league.isBlank()) return;
-
-            JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
-                    "Schedule", Dialog.ModalityType.APPLICATION_MODAL);
-            d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            d.setContentPane(new SchedulePanel(league));
-            d.pack();
-            d.setSize(600, 400);
-            d.setLocationRelativeTo(this);
-            d.setVisible(true);
-        });
-
-        // record result dialog
-        btnResults.addActionListener(e -> {
-            String league = JOptionPane.showInputDialog(this, "Enter League Name:");
-            if (league == null || league.isBlank()) return;
-
-            JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
-                    "Record Result", Dialog.ModalityType.APPLICATION_MODAL);
-            d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            d.setContentPane(new RecordResultPanel(league));
-            d.pack();
-            d.setSize(500, 300);
-            d.setLocationRelativeTo(this);
-            d.setVisible(true);
-        });
-
-        // standings dialog (US 16)
-        btnStandings.addActionListener(e -> {
-            String league = JOptionPane.showInputDialog(this, "Enter League Name:");
-            if (league == null || league.isBlank()) return;
-
-            JDialog d = new JDialog(
-                    SwingUtilities.getWindowAncestor(this),
-                    "Standings — " + league,
-                    Dialog.ModalityType.APPLICATION_MODAL
-            );
-            d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            d.setContentPane(new LeagueStandingsPanel(league));
-            d.pack();
-            d.setSize(500, 400);
-            d.setLocationRelativeTo(this);
-            d.setVisible(true);
-        });
-
-        // upcoming games dialog
-        btnUpcoming.addActionListener(e -> {
-            String league = JOptionPane.showInputDialog(this, "Enter League Name:");
-            if (league == null || league.isBlank()) return;
-
-            JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
-                    "Upcoming Games", Dialog.ModalityType.APPLICATION_MODAL);
-            d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            d.setContentPane(new UpcomingGamesPanel(league));
-            d.pack();
-            d.setSize(500, 400);
-            d.setLocationRelativeTo(this);
-            d.setVisible(true);
-        });
-
-        // delete selected user
+        // Delete selected user
         deleteBtn.addActionListener(e -> {
             String selected = usersList.getSelectedValue();
             if (selected == null) {
@@ -173,6 +126,7 @@ public class AdminDashboardPanel extends JPanel {
                 }
 
                 boolean deleted = userAdmin.deleteUser(userId);
+
                 if (deleted) {
                     JOptionPane.showMessageDialog(this, "User deleted successfully.");
                     refreshUsers();
@@ -187,7 +141,7 @@ public class AdminDashboardPanel extends JPanel {
         refreshUsers();
     }
 
-    /* ---------- HELPERS ---------- */
+    /* ========== HELPERS ========== */
 
     private void refreshUsers() {
         usersModel.clear();
@@ -198,23 +152,18 @@ public class AdminDashboardPanel extends JPanel {
     }
 
     private void showAddUserDialog() {
-        JTextField id = new JTextField();
+        JTextField id    = new JTextField();
         JTextField first = new JTextField();
-        JTextField last = new JTextField();
+        JTextField last  = new JTextField();
         JComboBox<Role> role = new JComboBox<>(Role.values());
-        JPasswordField pw = new JPasswordField();
+        JPasswordField pw    = new JPasswordField();
 
         JPanel p = new JPanel(new GridLayout(0, 1));
-        p.add(new JLabel("ID:"));
-        p.add(id);
-        p.add(new JLabel("First:"));
-        p.add(first);
-        p.add(new JLabel("Last:"));
-        p.add(last);
-        p.add(new JLabel("Role:"));
-        p.add(role);
-        p.add(new JLabel("Password:"));
-        p.add(pw);
+        p.add(new JLabel("ID:"));       p.add(id);
+        p.add(new JLabel("First:"));    p.add(first);
+        p.add(new JLabel("Last:"));     p.add(last);
+        p.add(new JLabel("Role:"));     p.add(role);
+        p.add(new JLabel("Password:")); p.add(pw);
 
         int ok = JOptionPane.showConfirmDialog(this, p, "Add User", JOptionPane.OK_CANCEL_OPTION);
         if (ok == JOptionPane.OK_OPTION) {
@@ -225,7 +174,6 @@ public class AdminDashboardPanel extends JPanel {
                     (Role) role.getSelectedItem(),
                     new String(pw.getPassword())
             );
-
             if (!added) {
                 JOptionPane.showMessageDialog(this,
                         "Failed to add user. Check duplicate ID or password policy (≥6 chars, upper/lower/digit/special).");
@@ -259,7 +207,92 @@ public class AdminDashboardPanel extends JPanel {
         dialog.setLocationRelativeTo(SwingUtilities.getWindowAncestor(this));
         dialog.setVisible(true);
     }
+
+    private void showScheduleDialog() {
+        String league = JOptionPane.showInputDialog(this, "Enter League Name:");
+        if (league == null || league.isBlank()) return;
+
+        JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
+                "Schedule", Dialog.ModalityType.APPLICATION_MODAL);
+        d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        d.setContentPane(new SchedulePanel(league));
+        d.pack();
+        d.setSize(600, 400);
+        d.setLocationRelativeTo(this);
+        d.setVisible(true);
+    }
+
+    private void showRecordResultDialog() {
+        String league = JOptionPane.showInputDialog(this, "Enter League Name:");
+        if (league == null || league.isBlank()) return;
+
+        JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
+                "Record Result", Dialog.ModalityType.APPLICATION_MODAL);
+        d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        d.setContentPane(new RecordResultPanel(league));
+        d.pack();
+        d.setSize(500, 300);
+        d.setLocationRelativeTo(this);
+        d.setVisible(true);
+    }
+
+    private void showUpcomingGamesDialog() {
+        String league = JOptionPane.showInputDialog(this, "Enter League Name:");
+        if (league == null || league.isBlank()) return;
+
+        JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
+                "Upcoming Games", Dialog.ModalityType.APPLICATION_MODAL);
+        d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        d.setContentPane(new UpcomingGamesPanel(league));
+        d.pack();
+        d.setSize(500, 400);
+        d.setLocationRelativeTo(this);
+        d.setVisible(true);
+    }
+
+    /** US16: show league standings dialog */
+    private void showStandingsDialog() {
+        String league = JOptionPane.showInputDialog(this, "Enter League Name:");
+        if (league == null || league.isBlank()) return;
+
+        JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
+                "Standings — " + league, Dialog.ModalityType.APPLICATION_MODAL);
+        d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        d.setContentPane(new LeagueStandingsPanel(league));
+        d.pack();
+        d.setSize(500, 400);
+        d.setLocationRelativeTo(this);
+        d.setVisible(true);
+    }
+
+    /** Load a league + teams + players from an XML file (Jamare’s US). */
+    private void loadLeagueFromXml() {
+        JFileChooser chooser = new JFileChooser();
+        int result = chooser.showOpenDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File xmlFile = chooser.getSelectedFile();
+        try {
+            LeagueXmlLoader loader = new LeagueXmlLoader();
+            League league = loader.loadLeagueFromFile(xmlFile);
+
+            AppState appState = AppState.getInstance();
+            appState.getLeagues().put(league.getName(), league);
+
+            JOptionPane.showMessageDialog(this,
+                    "Loaded league \"" + league.getName() + "\" with " +
+                            league.getTeams().size() + " teams.",
+                    "League Loaded",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                    "Error loading XML:\n" + ex.getMessage(),
+                    "Load Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
 }
-
-
 

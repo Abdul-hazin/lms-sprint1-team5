@@ -38,5 +38,11 @@ public void clearSchedule() {
 public void setScheduleCreated(boolean val) { 
     scheduleCreated = val; 
 }
+public void addTeam(Team team) {
+    if (team != null && team.getName() != null && !team.getName().isBlank()) {
+        teams.put(team.getName(), team);
+    }
+}
+
 
 }
