@@ -1,0 +1,805 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<league name="NBA">
+    <teams>
+
+    
+
+        <team name="Boston Celtics">
+            <players>
+
+                <player>
+                    <firstName>Chris</firstName>
+                    <lastName>Boucher</lastName>
+                    <position>F</position>
+                    <number>99</number>
+                </player>
+
+                <player>
+                    <firstName>Jaylen</firstName>
+                    <lastName>Brown</lastName>
+                    <position>G/F</position>
+                    <number>7</number>
+                </player>
+
+                <player>
+                    <firstName>Luka</firstName>
+                    <lastName>Garza</lastName>
+                    <position>C</position>
+                    <number>52</number>
+                </player>
+
+                <player>
+                    <firstName>Hugo</firstName>
+                    <lastName>Gonzalez</lastName>
+                    <position>G</position>
+                    <number>28</number>
+                </player>
+
+                <player>
+                    <firstName>Ron</firstName>
+                    <lastName>Harper Jr.</lastName>
+                    <position>G/F</position>
+                    <number>13</number>
+                </player>
+
+                <player>
+                    <firstName>Sam</firstName>
+                    <lastName>Hauser</lastName>
+                    <position>F</position>
+                    <number>30</number>
+                </player>
+
+                <player>
+                    <firstName>Josh</firstName>
+                    <lastName>Minott</lastName>
+                    <position>F</position>
+                    <number>8</number>
+                </player>
+
+                <player>
+                    <firstName>Payton</firstName>
+                    <lastName>Pritchard</lastName>
+                    <position>G</position>
+                    <number>11</number>
+                </player>
+
+                <player>
+                    <firstName>Neemias</firstName>
+                    <lastName>Queta</lastName>
+                    <position>C</position>
+                    <number>88</number>
+                </player>
+
+                <player>
+                    <firstName>Baylor</firstName>
+                    <lastName>Scheierman</lastName>
+                    <position>G</position>
+                    <number>55</number>
+                </player>
+
+                <player>
+                    <firstName>Max</firstName>
+                    <lastName>Shulga</lastName>
+                    <position>G</position>
+                    <number>29</number>
+                </player>
+
+                <player>
+                    <firstName>Anfernee</firstName>
+                    <lastName>Simons</lastName>
+                    <position>G</position>
+                    <number>4</number>
+                </player>
+
+                <player>
+                    <firstName>Jayson</firstName>
+                    <lastName>Tatum</lastName>
+                    <position>G/F</position>
+                    <number>0</number>
+                </player>
+
+                <player>
+                    <firstName>Xavier</firstName>
+                    <lastName>Tillman</lastName>
+                    <position>F</position>
+                    <number>26</number>
+                </player>
+
+                <player>
+                    <firstName>Jordan</firstName>
+                    <lastName>Walsh</lastName>
+                    <position>G</position>
+                    <number>27</number>
+                </player>
+
+                <player>
+                    <firstName>Derrick</firstName>
+                    <lastName>White</lastName>
+                    <position>G</position>
+                    <number>9</number>
+                </player>
+
+                <player>
+                    <firstName>Amari</firstName>
+                    <lastName>Williams</lastName>
+                    <position>F/C</position>
+                    <number>77</number>
+                </player>
+
+            </players>
+        </team>
+
+        <team name="Brooklyn Nets">
+            <players>
+                <player>
+                    <firstName>Spencer</firstName>
+                    <lastName>Hill</lastName>
+                    <position>G</position>
+                    <number>1</number>
+                </player>
+                <player>
+                    <firstName>Malik</firstName>
+                    <lastName>Reed</lastName>
+                    <position>F</position>
+                    <number>15</number>
+                </player>
+                <player>
+                    <firstName>Jonas</firstName>
+                    <lastName>Price</lastName>
+                    <position>C</position>
+                    <number>33</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="New York Knicks">
+            <players>
+                <player>
+                    <firstName>Marcus</firstName>
+                    <lastName>King</lastName>
+                    <position>G</position>
+                    <number>3</number>
+                </player>
+                <player>
+                    <firstName>Allen</firstName>
+                    <lastName>Rivers</lastName>
+                    <position>F</position>
+                    <number>22</number>
+                </player>
+                <player>
+                    <firstName>Jonah</firstName>
+                    <lastName>Warren</lastName>
+                    <position>C</position>
+                    <number>44</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Philadelphia 76ers">
+            <players>
+                <player>
+                    <firstName>Darius</firstName>
+                    <lastName>Stone</lastName>
+                    <position>G</position>
+                    <number>6</number>
+                </player>
+                <player>
+                    <firstName>Kenny</firstName>
+                    <lastName>Brooks</lastName>
+                    <position>F</position>
+                    <number>18</number>
+                </player>
+                <player>
+                    <firstName>Victor</firstName>
+                    <lastName>Cole</lastName>
+                    <position>C</position>
+                    <number>50</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Toronto Raptors">
+            <players>
+                <player>
+                    <firstName>Ryan</firstName>
+                    <lastName>Jennings</lastName>
+                    <position>G</position>
+                    <number>5</number>
+                </player>
+                <player>
+                    <firstName>Adrian</firstName>
+                    <lastName>Green</lastName>
+                    <position>F</position>
+                    <number>10</number>
+                </player>
+                <player>
+                    <firstName>Lucas</firstName>
+                    <lastName>Foster</lastName>
+                    <position>C</position>
+                    <number>41</number>
+                </player>
+            </players>
+        </team>
+
+
+        <team name="Chicago Bulls">
+            <players>
+                <player>
+                    <firstName>Jalen</firstName>
+                    <lastName>Walker</lastName>
+                    <position>G</position>
+                    <number>2</number>
+                </player>
+                <player>
+                    <firstName>Kendrick</firstName>
+                    <lastName>Moore</lastName>
+                    <position>F</position>
+                    <number>14</number>
+                </player>
+                <player>
+                    <firstName>Nathan</firstName>
+                    <lastName>Hayes</lastName>
+                    <position>C</position>
+                    <number>35</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Cleveland Cavaliers">
+            <players>
+                <player>
+                    <firstName>Damien</firstName>
+                    <lastName>Fox</lastName>
+                    <position>G</position>
+                    <number>8</number>
+                </player>
+                <player>
+                    <firstName>Tyrese</firstName>
+                    <lastName>Banks</lastName>
+                    <position>F</position>
+                    <number>21</number>
+                </player>
+                <player>
+                    <firstName>Oliver</firstName>
+                    <lastName>Grant</lastName>
+                    <position>C</position>
+                    <number>45</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Detroit Pistons">
+            <players>
+                <player>
+                    <firstName>Caleb</firstName>
+                    <lastName>Young</lastName>
+                    <position>G</position>
+                    <number>4</number>
+                </player>
+                <player>
+                    <firstName>Ramon</firstName>
+                    <lastName>Lopez</lastName>
+                    <position>F</position>
+                    <number>19</number>
+                </player>
+                <player>
+                    <firstName>Isaiah</firstName>
+                    <lastName>Watson</lastName>
+                    <position>C</position>
+                    <number>32</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Indiana Pacers">
+            <players>
+                <player>
+                    <firstName>Trent</firstName>
+                    <lastName>Douglas</lastName>
+                    <position>G</position>
+                    <number>12</number>
+                </player>
+                <player>
+                    <firstName>Harold</firstName>
+                    <lastName>Parker</lastName>
+                    <position>F</position>
+                    <number>23</number>
+                </player>
+                <player>
+                    <firstName>Carter</firstName>
+                    <lastName>Russell</lastName>
+                    <position>C</position>
+                    <number>40</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Milwaukee Bucks">
+            <players>
+                <player>
+                    <firstName>Aaron</firstName>
+                    <lastName>Ford</lastName>
+                    <position>G</position>
+                    <number>11</number>
+                </player>
+                <player>
+                    <firstName>Terrence</firstName>
+                    <lastName>Reyes</lastName>
+                    <position>F</position>
+                    <number>16</number>
+                </player>
+                <player>
+                    <firstName>Felix</firstName>
+                    <lastName>Allen</lastName>
+                    <position>C</position>
+                    <number>42</number>
+                </player>
+            </players>
+        </team>
+
+
+        <team name="Atlanta Hawks">
+            <players>
+                <player>
+                    <firstName>Devin</firstName>
+                    <lastName>Shaw</lastName>
+                    <position>G</position>
+                    <number>7</number>
+                </player>
+                <player>
+                    <firstName>Miles</firstName>
+                    <lastName>Hampton</lastName>
+                    <position>F</position>
+                    <number>20</number>
+                </player>
+                <player>
+                    <firstName>Derek</firstName>
+                    <lastName>Hughes</lastName>
+                    <position>C</position>
+                    <number>48</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Charlotte Hornets">
+            <players>
+                <player>
+                    <firstName>Logan</firstName>
+                    <lastName>Rhodes</lastName>
+                    <position>G</position>
+                    <number>0</number>
+                </player>
+                <player>
+                    <firstName>Kelvin</firstName>
+                    <lastName>Owens</lastName>
+                    <position>F</position>
+                    <number>25</number>
+                </player>
+                <player>
+                    <firstName>Brandon</firstName>
+                    <lastName>Myers</lastName>
+                    <position>C</position>
+                    <number>34</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Miami Heat">
+            <players>
+                <player>
+                    <firstName>Jared</firstName>
+                    <lastName>Cruz</lastName>
+                    <position>G</position>
+                    <number>9</number>
+                </player>
+                <player>
+                    <firstName>Omar</firstName>
+                    <lastName>Vega</lastName>
+                    <position>F</position>
+                    <number>13</number>
+                </player>
+                <player>
+                    <firstName>Martin</firstName>
+                    <lastName>Rhodes</lastName>
+                    <position>C</position>
+                    <number>52</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Orlando Magic">
+            <players>
+                <player>
+                    <firstName>Tyler</firstName>
+                    <lastName>Hunter</lastName>
+                    <position>G</position>
+                    <number>6</number>
+                </player>
+                <player>
+                    <firstName>Dante</firstName>
+                    <lastName>Page</lastName>
+                    <position>F</position>
+                    <number>31</number>
+                </player>
+                <player>
+                    <firstName>George</firstName>
+                    <lastName>Lowry</lastName>
+                    <position>C</position>
+                    <number>54</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Washington Wizards">
+            <players>
+                <player>
+                    <firstName>Shawn</firstName>
+                    <lastName>Powell</lastName>
+                    <position>G</position>
+                    <number>10</number>
+                </player>
+                <player>
+                    <firstName>Isaac</firstName>
+                    <lastName>Boone</lastName>
+                    <position>F</position>
+                    <number>27</number>
+                </player>
+                <player>
+                    <firstName>Preston</firstName>
+                    <lastName>McCoy</lastName>
+                    <position>C</position>
+                    <number>38</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Denver Nuggets">
+            <players>
+                <player>
+                    <firstName>Reggie</firstName>
+                    <lastName>Howard</lastName>
+                    <position>G</position>
+                    <number>3</number>
+                </player>
+                <player>
+                    <firstName>Clifford</firstName>
+                    <lastName>James</lastName>
+                    <position>F</position>
+                    <number>24</number>
+                </player>
+                <player>
+                    <firstName>Henry</firstName>
+                    <lastName>Stanley</lastName>
+                    <position>C</position>
+                    <number>46</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Minnesota Timberwolves">
+            <players>
+                <player>
+                    <firstName>Gavin</firstName>
+                    <lastName>Reed</lastName>
+                    <position>G</position>
+                    <number>1</number>
+                </player>
+                <player>
+                    <firstName>Tobias</firstName>
+                    <lastName>Ford</lastName>
+                    <position>F</position>
+                    <number>18</number>
+                </player>
+                <player>
+                    <firstName>Leon</firstName>
+                    <lastName>Griffin</lastName>
+                    <position>C</position>
+                    <number>55</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Oklahoma City Thunder">
+            <players>
+                <player>
+                    <firstName>Quincy</firstName>
+                    <lastName>Holt</lastName>
+                    <position>G</position>
+                    <number>4</number>
+                </player>
+                <player>
+                    <firstName>Edwin</firstName>
+                    <lastName>Jennings</lastName>
+                    <position>F</position>
+                    <number>29</number>
+                </player>
+                <player>
+                    <firstName>Mitchell</firstName>
+                    <lastName>Ray</lastName>
+                    <position>C</position>
+                    <number>39</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Portland Trail Blazers">
+            <players>
+                <player>
+                    <firstName>Colin</firstName>
+                    <lastName>Douglas</lastName>
+                    <position>G</position>
+                    <number>0</number>
+                </player>
+                <player>
+                    <firstName>Riley</firstName>
+                    <lastName>Stevens</lastName>
+                    <position>F</position>
+                    <number>33</number>
+                </player>
+                <player>
+                    <firstName>Marshall</firstName>
+                    <lastName>Diaz</lastName>
+                    <position>C</position>
+                    <number>53</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Utah Jazz">
+            <players>
+                <player>
+                    <firstName>Neil</firstName>
+                    <lastName>Harris</lastName>
+                    <position>G</position>
+                    <number>2</number>
+                </player>
+                <player>
+                    <firstName>Quentin</firstName>
+                    <lastName>Burke</lastName>
+                    <position>F</position>
+                    <number>21</number>
+                </player>
+                <player>
+                    <firstName>Harvey</firstName>
+                    <lastName>Lane</lastName>
+                    <position>C</position>
+                    <number>47</number>
+                </player>
+            </players>
+        </team>
+
+
+
+        <team name="Golden State Warriors">
+            <players>
+                <player>
+                    <firstName>Shane</firstName>
+                    <lastName>Porter</lastName>
+                    <position>G</position>
+                    <number>11</number>
+                </player>
+                <player>
+                    <firstName>Andre</firstName>
+                    <lastName>Ross</lastName>
+                    <position>F</position>
+                    <number>30</number>
+                </player>
+                <player>
+                    <firstName>Dwight</firstName>
+                    <lastName>Summers</lastName>
+                    <position>C</position>
+                    <number>44</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="LA Clippers">
+            <players>
+                <player>
+                    <firstName>Cory</firstName>
+                    <lastName>Wells</lastName>
+                    <position>G</position>
+                    <number>5</number>
+                </player>
+                <player>
+                    <firstName>Jarrett</firstName>
+                    <lastName>Coleman</lastName>
+                    <position>F</position>
+                    <number>16</number>
+                </player>
+                <player>
+                    <firstName>Lawrence</firstName>
+                    <lastName>Bates</lastName>
+                    <position>C</position>
+                    <number>52</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Los Angeles Lakers">
+            <players>
+                <player>
+                    <firstName>Terrance</firstName>
+                    <lastName>Wright</lastName>
+                    <position>G</position>
+                    <number>6</number>
+                </player>
+                <player>
+                    <firstName>Reese</firstName>
+                    <lastName>Fleming</lastName>
+                    <position>F</position>
+                    <number>23</number>
+                </player>
+                <player>
+                    <firstName>Julius</firstName>
+                    <lastName>Norman</lastName>
+                    <position>C</position>
+                    <number>45</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Phoenix Suns">
+            <players>
+                <player>
+                    <firstName>Damion</firstName>
+                    <lastName>Swanson</lastName>
+                    <position>G</position>
+                    <number>1</number>
+                </player>
+                <player>
+                    <firstName>Owen</firstName>
+                    <lastName>Harrington</lastName>
+                    <position>F</position>
+                    <number>34</number>
+                </player>
+                <player>
+                    <firstName>Franklin</firstName>
+                    <lastName>Day</lastName>
+                    <position>C</position>
+                    <number>55</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Sacramento Kings">
+            <players>
+                <player>
+                    <firstName>Elliot</firstName>
+                    <lastName>Carson</lastName>
+                    <position>G</position>
+                    <number>9</number>
+                </player>
+                <player>
+                    <firstName>Gordon</firstName>
+                    <lastName>Becker</lastName>
+                    <position>F</position>
+                    <number>18</number>
+                </player>
+                <player>
+                    <firstName>Marcus</firstName>
+                    <lastName>Snow</lastName>
+                    <position>C</position>
+                    <number>40</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Dallas Mavericks">
+            <players>
+                <player>
+                    <firstName>Travis</firstName>
+                    <lastName>Foster</lastName>
+                    <position>G</position>
+                    <number>3</number>
+                </player>
+                <player>
+                    <firstName>Rashad</firstName>
+                    <lastName>Graves</lastName>
+                    <position>F</position>
+                    <number>22</number>
+                </player>
+                <player>
+                    <firstName>Dominic</firstName>
+                    <lastName>Newton</lastName>
+                    <position>C</position>
+                    <number>50</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Houston Rockets">
+            <players>
+                <player>
+                    <firstName>Brian</firstName>
+                    <lastName>Long</lastName>
+                    <position>G</position>
+                    <number>4</number>
+                </player>
+                <player>
+                    <firstName>Derrick</firstName>
+                    <lastName>Carter</lastName>
+                    <position>F</position>
+                    <number>31</number>
+                </player>
+                <player>
+                    <firstName>Kelvin</firstName>
+                    <lastName>Harriss</lastName>
+                    <position>C</position>
+                    <number>41</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="Memphis Grizzlies">
+            <players>
+                <player>
+                    <firstName>Alec</firstName>
+                    <lastName>Woods</lastName>
+                    <position>G</position>
+                    <number>12</number>
+                </player>
+                <player>
+                    <firstName>Rico</firstName>
+                    <lastName>Sanders</lastName>
+                    <position>F</position>
+                    <number>21</number>
+                </player>
+                <player>
+                    <firstName>Conrad</firstName>
+                    <lastName>Walters</lastName>
+                    <position>C</position>
+                    <number>42</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="New Orleans Pelicans">
+            <players>
+                <player>
+                    <firstName>Maurice</firstName>
+                    <lastName>Steele</lastName>
+                    <position>G</position>
+                    <number>5</number>
+                </player>
+                <player>
+                    <firstName>Elijah</firstName>
+                    <lastName>Briggs</lastName>
+                    <position>F</position>
+                    <number>26</number>
+                </player>
+                <player>
+                    <firstName>Donnell</firstName>
+                    <lastName>Floyd</lastName>
+                    <position>C</position>
+                    <number>37</number>
+                </player>
+            </players>
+        </team>
+
+        <team name="San Antonio Spurs">
+            <players>
+                <player>
+                    <firstName>Harvey</firstName>
+                    <lastName>Jordan</lastName>
+                    <position>G</position>
+                    <number>2</number>
+                </player>
+                <player>
+                    <firstName>Trevor</firstName>
+                    <lastName>Reeves</lastName>
+                    <position>F</position>
+                    <number>17</number>
+                </player>
+                <player>
+                    <firstName>Glen</firstName>
+                    <lastName>Morris</lastName>
+                    <position>C</position>
+                    <number>53</number>
+                </player>
+            </players>
+        </team>
+
+    </teams>
+</league>
