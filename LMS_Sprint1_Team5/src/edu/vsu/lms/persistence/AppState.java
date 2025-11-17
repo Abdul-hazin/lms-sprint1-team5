@@ -65,5 +65,24 @@ public class AppState implements Serializable {
         return fresh;
     }
 }
+public boolean deleteLeague(String leagueKey) {
+    League lg = leagues.get(leagueKey);
+    if (lg == null) return false;
+
+    // If your League has teams, block (or auto-delete) as you prefer:
+    if (lg.getTeams() != null && !lg.getTeams().isEmpty()) {
+        return false; // block if it still has teams
+        // OR: lg.getTeams().clear(); // if you prefer auto-delete all teams
+    }
+
+    leagues.remove(leagueKey);
+    return true;
 }
 
+public boolean deleteTeam(String leagueKey, String teamName) {
+    League lg = leagues.get(leagueKey);
+    if (lg == null) return false;
+    if (lg.getTeams() == null) return false;
+    return lg.getTeams().remove(teamName) != null;
+}
+}

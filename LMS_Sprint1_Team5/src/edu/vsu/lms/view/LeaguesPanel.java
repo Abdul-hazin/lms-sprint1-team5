@@ -27,10 +27,12 @@ public class LeaguesPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        // Header
         JLabel header = new JLabel("Leagues");
         header.setFont(header.getFont().deriveFont(Font.BOLD, 16f));
         add(header, BorderLayout.NORTH);
 
+        // Center list
         add(new JScrollPane(list), BorderLayout.CENTER);
 
         // Bottom control buttons

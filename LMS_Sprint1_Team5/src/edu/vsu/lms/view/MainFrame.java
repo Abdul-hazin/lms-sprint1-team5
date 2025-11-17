@@ -1,7 +1,11 @@
 package edu.vsu.lms.view;
 
+import edu.vsu.lms.persistence.AppState;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 import edu.vsu.lms.controller.AuthController;
 import edu.vsu.lms.model.Role;
 import edu.vsu.lms.model.User;
@@ -11,9 +15,14 @@ public class MainFrame extends JFrame {
     private final JPanel root = new JPanel(cards);
     private final AuthController auth = new AuthController();
 
+    // Load persisted singleton so we can save on exit
+    private final AppState state = AppState.getInstance();
+
     public MainFrame() {
         super("LMS — Sprint 1");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // We'll handle saving on close ourselves
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setSize(800, 600);
         setLocationRelativeTo(null);
 
@@ -97,7 +106,9 @@ public class MainFrame extends JFrame {
         }
     }
 
+    // Called by AdminDashboardPanel via the Runnable we passed in
     private void onLogout() {
+        state.save();
         cards.show(root, "login");
     }
 }
