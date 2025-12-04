@@ -26,6 +26,24 @@ public class MainFrame extends JFrame {
         setSize(800, 600);
         setLocationRelativeTo(null);
 
+         addWindowListener(new WindowAdapter() {
+        @Override
+        public void windowClosing(WindowEvent e) {
+            int choice = JOptionPane.showConfirmDialog(
+                    MainFrame.this,
+                    "Save and exit the application?",
+                    "Exit",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (choice == JOptionPane.YES_OPTION) {
+                // Save state before quitting
+                state.save();
+                dispose();          // close the frame
+                System.exit(0);     // end the JVM
+            }
+        }
+    });
+
         // temporary content while loading
         setContentPane(new JLabel("Loading UI...", SwingConstants.CENTER));
 
