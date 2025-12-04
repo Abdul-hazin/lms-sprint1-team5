@@ -4,12 +4,14 @@ import java.io.*;
 import java.util.*;
 import edu.vsu.lms.model.*;
 import edu.vsu.lms.util.Passwords;
+import edu.vsu.lms.controller.GameStatsController;
 
 public class AppState implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-     private static final String SAVE_FILE = System.getProperty("user.dir") + File.separator + "appstate.ser";
+    private static final String SAVE_FILE =
+            System.getProperty("user.dir") + File.separator + "appstate.ser";
 
     private static final AppState INSTANCE = load();
     public static AppState getInstance() { return INSTANCE; }
@@ -20,8 +22,11 @@ public class AppState implements Serializable {
     private final Map<String, League> leagues = new HashMap<>();
     public Map<String, League> getLeagues() { return leagues; }
 
+    // ⚠️ CHANGED: remove 'final' so we can repair it after deserialization
+    private GameStatsController gameStatsController = new GameStatsController();
+    public GameStatsController getGameStatsController() { return gameStatsController; }
+
     private AppState() {
-        
     }
 
     public void seedDefaults() {
@@ -42,6 +47,7 @@ public class AppState implements Serializable {
         leagues.putIfAbsent("Default League", new League("Default League"));
         return "Default League";
     }
+
     public void save() {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(SAVE_FILE))) {
             out.writeObject(this);
@@ -52,37 +58,44 @@ public class AppState implements Serializable {
         }
     }
 
-
     private static AppState load() {
-    try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(SAVE_FILE))) {
-        AppState loaded = (AppState) in.readObject();
-        System.out.println("✅ AppState loaded from file.");
-        return loaded;
-    } catch (IOException | ClassNotFoundException e) {
-        System.out.println("⚠️ No saved AppState found. Starting fresh...");
-        AppState fresh = new AppState();
-        fresh.seedDefaults(); // only seed on first run
-        return fresh;
-    }
-}
-public boolean deleteLeague(String leagueKey) {
-    League lg = leagues.get(leagueKey);
-    if (lg == null) return false;
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(SAVE_FILE))) {
+            AppState loaded = (AppState) in.readObject();
+            System.out.println("✅ AppState loaded from file.");
 
-    // If your League has teams, block (or auto-delete) as you prefer:
-    if (lg.getTeams() != null && !lg.getTeams().isEmpty()) {
-        return false; // block if it still has teams
-        // OR: lg.getTeams().clear(); // if you prefer auto-delete all teams
+            // 🔧 Backward-compat: older saves won't have this field
+            if (loaded.gameStatsController == null) {
+                System.out.println("⚠️ gameStatsController missing in save; creating new one.");
+                loaded.gameStatsController = new GameStatsController();
+            }
+
+            return loaded;
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("⚠️ No saved AppState found. Starting fresh...");
+            AppState fresh = new AppState();
+            fresh.seedDefaults(); // only seed on first run
+            return fresh;
+        }
     }
 
-    leagues.remove(leagueKey);
-    return true;
-}
+    public boolean deleteLeague(String leagueKey) {
+        League lg = leagues.get(leagueKey);
+        if (lg == null) return false;
 
-public boolean deleteTeam(String leagueKey, String teamName) {
-    League lg = leagues.get(leagueKey);
-    if (lg == null) return false;
-    if (lg.getTeams() == null) return false;
-    return lg.getTeams().remove(teamName) != null;
-}
+        // If your League has teams, block (or auto-delete) as you prefer:
+        if (lg.getTeams() != null && !lg.getTeams().isEmpty()) {
+            return false; // block if it still has teams
+            // OR: lg.getTeams().clear(); // if you prefer auto-delete all teams
+        }
+
+        leagues.remove(leagueKey);
+        return true;
+    }
+
+    public boolean deleteTeam(String leagueKey, String teamName) {
+        League lg = leagues.get(leagueKey);
+        if (lg == null) return false;
+        if (lg.getTeams() == null) return false;
+        return lg.getTeams().remove(teamName) != null;
+    }
 }

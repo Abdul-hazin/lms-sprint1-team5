@@ -65,5 +65,8 @@ public class UserAdminController {
         state.save();
         return true;
     }
-
+    public void clearAllUsersForTesting() {
+        state.getUsers().clear();
+        state.save();   // optional
+    }
 }
