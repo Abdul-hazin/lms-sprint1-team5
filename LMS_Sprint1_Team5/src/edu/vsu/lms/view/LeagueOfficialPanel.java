@@ -48,9 +48,10 @@ public class LeagueOfficialPanel extends JPanel {
         JButton btnPower         = new JButton("Power Rankings");
 
         // Bracket buttons
-        JButton btnScheduleBracket = new JButton("Schedule Playoff Bracket");
-        JButton btnViewBracket     = new JButton("View Bracket");
-        JButton btnBracketResults  = new JButton("Bracket Results");
+        JButton btnScheduleBracket  = new JButton("Schedule Playoff Bracket");
+        JButton btnViewBracket      = new JButton("View Bracket");
+        JButton btnBracketResults   = new JButton("Bracket Results");
+        JButton btnBracketManager   = new JButton("Bracket Manager…"); // NEW
 
         // =======================
         // TOP: league + bracket
@@ -68,6 +69,7 @@ public class LeagueOfficialPanel extends JPanel {
         row2.add(btnScheduleBracket);
         row2.add(btnViewBracket);
         row2.add(btnBracketResults);
+        row2.add(btnBracketManager); // NEW
 
         top.add(row1);
         top.add(row2);
@@ -129,7 +131,7 @@ public class LeagueOfficialPanel extends JPanel {
             JOptionPane.showMessageDialog(this, msg);
         });
 
-        // US 26 – View Bracket
+        // US 26 – View Bracket (simple text dialog)
         btnViewBracket.addActionListener(e -> {
             String currentLeague = (String) leagueCombo.getSelectedItem();
             if (currentLeague == null) {
@@ -151,7 +153,7 @@ public class LeagueOfficialPanel extends JPanel {
             JOptionPane.showMessageDialog(this, text);
         });
 
-        // US 27 – View Bracket Results
+        // US 27 – View Bracket Results (simple text dialog)
         btnBracketResults.addActionListener(e -> {
             String currentLeague = (String) leagueCombo.getSelectedItem();
             if (currentLeague == null) {
@@ -172,6 +174,9 @@ public class LeagueOfficialPanel extends JPanel {
             String text = league.getBracket().formatResults(league);
             JOptionPane.showMessageDialog(this, text);
         });
+
+        // NEW: Bracket Manager dialog with tabs (View / Record / Generate)
+        btnBracketManager.addActionListener(e -> showBracketManagerDialog());
 
         leagueCombo.addActionListener(e -> refresh());
 
@@ -364,6 +369,75 @@ public class LeagueOfficialPanel extends JPanel {
         d.setContentPane(new GameStatsEditorPanel(league, selected, gsc));
         d.setSize(900, 600);
         d.setLocationRelativeTo(this);
+        d.setVisible(true);
+    }
+
+    /** NEW: Bracket Manager dialog with tabs for this selected league. */
+    private void showBracketManagerDialog() {
+        String currentLeagueName = (String) leagueCombo.getSelectedItem();
+        if (currentLeagueName == null) {
+            JOptionPane.showMessageDialog(this, "Select a league first.");
+            return;
+        }
+
+        AppState appState = AppState.getInstance();
+        League league = appState.getLeagues().get(currentLeagueName);
+        if (league == null) {
+            JOptionPane.showMessageDialog(this,
+                    "League \"" + currentLeagueName + "\" not found.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JDialog d = new JDialog(
+                SwingUtilities.getWindowAncestor(this),
+                "Bracket Manager — " + league.getName(),
+                Dialog.ModalityType.APPLICATION_MODAL
+        );
+
+        JTabbedPane tabs = new JTabbedPane();
+
+        // --- TAB 1: text bracket view ---
+        JTextArea bracketView = new JTextArea();
+        bracketView.setEditable(false);
+        bracketView.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        if (league.hasBracket()) {
+            bracketView.setText(league.getBracket().formatBracket());
+        } else {
+            bracketView.setText("No bracket has been scheduled yet.");
+        }
+
+        JScrollPane bracketScroll = new JScrollPane(bracketView);
+        tabs.addTab("Bracket View", bracketScroll);
+
+        // --- TAB 2: bracket-only result entry ---
+        BracketRecordResultPanel recordPanel =
+                new BracketRecordResultPanel(league.getName());
+
+        JButton refreshBracketBtn = new JButton("Refresh Bracket");
+        refreshBracketBtn.addActionListener(e ->
+                bracketView.setText(
+                        league.hasBracket()
+                                ? league.getBracket().formatBracket()
+                                : "No bracket has been scheduled yet.")
+        );
+
+        JPanel resultsWrapper = new JPanel(new BorderLayout());
+        resultsWrapper.add(recordPanel, BorderLayout.CENTER);
+        resultsWrapper.add(refreshBracketBtn, BorderLayout.SOUTH);
+
+        tabs.addTab("Record Results", resultsWrapper);
+
+        // --- TAB 3: bracket generator (top N teams, date, etc.) ---
+        BracketGeneratorPanel generatorPanel = new BracketGeneratorPanel(league);
+        tabs.addTab("Generate Bracket", generatorPanel);
+
+        d.setContentPane(tabs);
+        d.setSize(900, 600);
+        d.setLocationRelativeTo(this);
+        d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         d.setVisible(true);
     }
 }

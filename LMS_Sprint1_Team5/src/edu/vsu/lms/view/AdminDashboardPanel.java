@@ -6,10 +6,12 @@ import java.util.List;
 import java.io.File;
 
 import edu.vsu.lms.controller.AuthController;
+import edu.vsu.lms.controller.GameStatsController;
 import edu.vsu.lms.controller.UserAdminController;
 import edu.vsu.lms.model.Role;
 import edu.vsu.lms.model.User;
 import edu.vsu.lms.model.League;
+import edu.vsu.lms.model.Game;
 import edu.vsu.lms.persistence.AppState;
 import edu.vsu.lms.persistence.LeagueXmlLoader;
 
@@ -22,14 +24,17 @@ public class AdminDashboardPanel extends JPanel {
     private final JList<String> usersList = new JList<>(usersModel);
     private final Runnable onLogout;
 
+    // shared game stats controller from AppState
+    private final GameStatsController gameStatsController =
+            AppState.getInstance().getGameStatsController();
+
     public AdminDashboardPanel(AuthController auth, Runnable onLogout) {
         this.auth = auth;
         this.onLogout = onLogout;
-
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        /* ========== HEADER (TOP) ========== */
+        // ===== HEADER (TOP) =====
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 5));
 
         JLabel hello = new JLabel("Logged in as: " +
@@ -41,9 +46,15 @@ public class AdminDashboardPanel extends JPanel {
         JButton btnTeams         = new JButton("Teams…");
         JButton btnSchedule      = new JButton("Schedule...");
         JButton btnResults       = new JButton("Record Result");
-        JButton btnStandings     = new JButton("Standings…");     // 👈 US16 button
         JButton btnUpcoming      = new JButton("Upcoming Games");
-        JButton btnLoadLeagueXml = new JButton("Load League XML"); // Jamare’s feature
+        JButton btnViewStats     = new JButton("View Game Stats");
+        JButton btnLoadLeagueXml = new JButton("Load League XML");
+        JButton btnEditStats     = new JButton("Edit Game Stats");
+        JButton btnStandings     = new JButton("Standings…");
+        JButton btnPlayerStats   = new JButton("Player Stats…");
+        JButton btnTeamStats     = new JButton("Team Stats…");
+        JButton btnPower         = new JButton("Power Rankings");
+        JButton btnBracketMgr    = new JButton("Bracket Manager…"); // now used in bottom-left
 
         top.add(hello);
         top.add(btnRefresh);
@@ -52,25 +63,32 @@ public class AdminDashboardPanel extends JPanel {
         top.add(btnTeams);
         top.add(btnSchedule);
         top.add(btnResults);
-        top.add(btnStandings);   // add standings button to header
         top.add(btnUpcoming);
+        top.add(btnViewStats);
+        top.add(btnStandings);
+        top.add(btnPlayerStats);
+        top.add(btnTeamStats);
+        top.add(btnPower);
+        // NOTE: btnBracketMgr is NOT added here anymore
         add(top, BorderLayout.NORTH);
 
-        /* ========== CENTER: USERS LIST ========== */
+        // ===== CENTER (USERS LIST) =====
         add(new JScrollPane(usersList), BorderLayout.CENTER);
 
-        /* ========== FOOTER (BOTTOM) ========== */
+        // ===== FOOTER (BOTTOM) =====
         JButton btnLogout = new JButton("Logout");
         JButton deleteBtn = new JButton("Delete");
         deleteBtn.setForeground(Color.RED);
 
         JPanel bottom = new JPanel(new BorderLayout());
 
-        // left: Load XML
+        // LEFT side: Load XML + Edit Stats + Bracket Manager
         JPanel leftBottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
         leftBottom.add(btnLoadLeagueXml);
+        leftBottom.add(btnEditStats);
+        leftBottom.add(btnBracketMgr); // ✅ bottom-left next to Edit Game Stats
 
-        // right: Delete, Upcoming, Logout
+        // RIGHT side: Delete, Upcoming, Logout
         JPanel rightBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         rightBottom.add(deleteBtn);
         rightBottom.add(btnUpcoming);
@@ -81,8 +99,7 @@ public class AdminDashboardPanel extends JPanel {
 
         add(bottom, BorderLayout.SOUTH);
 
-        /* ========== EVENT LISTENERS ========== */
-
+        // ===== EVENT LISTENERS =====
         btnRefresh.addActionListener(e -> refreshUsers());
         btnAdd.addActionListener(e -> showAddUserDialog());
         btnLeagues.addActionListener(e -> showLeaguesDialog());
@@ -90,8 +107,98 @@ public class AdminDashboardPanel extends JPanel {
         btnSchedule.addActionListener(e -> showScheduleDialog());
         btnResults.addActionListener(e -> showRecordResultDialog());
         btnUpcoming.addActionListener(e -> showUpcomingGamesDialog());
-        btnStandings.addActionListener(e -> showStandingsDialog());    // 👈 US16 handler
         btnLoadLeagueXml.addActionListener(e -> loadLeagueFromXml());
+        btnViewStats.addActionListener(e -> showGameStatsReportDialog());
+        btnEditStats.addActionListener(e -> showGameStatsEditorDialog());
+
+        btnPower.addActionListener(e -> {
+            String leagueName = JOptionPane.showInputDialog(this, "Enter League Name:");
+            if (leagueName == null || leagueName.isBlank()) return;
+
+            AppState appState = AppState.getInstance();
+            League league = appState.getLeagues().get(leagueName);
+            if (league == null) {
+                JOptionPane.showMessageDialog(this,
+                        "League \"" + leagueName + "\" not found.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
+                    "Power Rankings", Dialog.ModalityType.APPLICATION_MODAL);
+            d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            d.setContentPane(new PowerRankingsPanel(leagueName, gameStatsController));
+            d.setSize(1000, 600);
+            d.setLocationRelativeTo(this);
+            d.setVisible(true);
+        });
+
+        btnTeamStats.addActionListener(e -> {
+            String leagueName = JOptionPane.showInputDialog(this, "Enter League Name:");
+            if (leagueName == null || leagueName.isBlank()) return;
+
+            AppState appState = AppState.getInstance();
+            if (!appState.getLeagues().containsKey(leagueName)) {
+                JOptionPane.showMessageDialog(this,
+                        "League \"" + leagueName + "\" not found.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
+                    "Team Stats", Dialog.ModalityType.APPLICATION_MODAL);
+            d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            d.setContentPane(new TeamStatsPanel(
+                    leagueName,
+                    appState.getGameStatsController()
+            ));
+            d.setSize(750, 500);
+            d.setLocationRelativeTo(this);
+            d.setVisible(true);
+        });
+
+        btnPlayerStats.addActionListener(e -> {
+            String leagueName = JOptionPane.showInputDialog(this, "Enter League Name:");
+            if (leagueName == null || leagueName.isBlank()) return;
+
+            AppState appState = AppState.getInstance();
+            if (!appState.getLeagues().containsKey(leagueName)) {
+                JOptionPane.showMessageDialog(this,
+                        "League \"" + leagueName + "\" not found.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
+                    "Player Stats", Dialog.ModalityType.APPLICATION_MODAL);
+            d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            d.setContentPane(new PlayerStatsPanel(
+                    leagueName,
+                    appState.getGameStatsController()
+            ));
+            d.setSize(700, 500);
+            d.setLocationRelativeTo(this);
+            d.setVisible(true);
+        });
+
+        btnStandings.addActionListener(e -> {
+            String leagueName = JOptionPane.showInputDialog(this, "Enter League Name:");
+            if (leagueName == null || leagueName.isBlank()) return;
+
+            JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
+                    "League Standings", Dialog.ModalityType.APPLICATION_MODAL);
+            d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            d.setContentPane(new LeagueStandingsPanel(leagueName));
+            d.setSize(500, 400);
+            d.setLocationRelativeTo(this);
+            d.setVisible(true);
+        });
+
+        // Bracket Manager (bottom-left)
+        btnBracketMgr.addActionListener(e -> showBracketManagerDialog());
 
         btnLogout.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this,
@@ -117,7 +224,6 @@ public class AdminDashboardPanel extends JPanel {
                     JOptionPane.YES_NO_OPTION);
 
             if (confirm == JOptionPane.YES_OPTION) {
-                // Extract ID from parentheses in User.toString()
                 String userId = null;
                 int start = selected.indexOf('(');
                 int end = selected.indexOf(')');
@@ -137,11 +243,11 @@ public class AdminDashboardPanel extends JPanel {
             }
         });
 
-        // initial load
+        // Initial load
         refreshUsers();
     }
 
-    /* ========== HELPERS ========== */
+    // ===== HELPERS =====
 
     private void refreshUsers() {
         usersModel.clear();
@@ -156,7 +262,7 @@ public class AdminDashboardPanel extends JPanel {
         JTextField first = new JTextField();
         JTextField last  = new JTextField();
         JComboBox<Role> role = new JComboBox<>(Role.values());
-        JPasswordField pw    = new JPasswordField();
+        JPasswordField pw = new JPasswordField();
 
         JPanel p = new JPanel(new GridLayout(0, 1));
         p.add(new JLabel("ID:"));       p.add(id);
@@ -250,22 +356,6 @@ public class AdminDashboardPanel extends JPanel {
         d.setVisible(true);
     }
 
-    /** US16: show league standings dialog */
-    private void showStandingsDialog() {
-        String league = JOptionPane.showInputDialog(this, "Enter League Name:");
-        if (league == null || league.isBlank()) return;
-
-        JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
-                "Standings — " + league, Dialog.ModalityType.APPLICATION_MODAL);
-        d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        d.setContentPane(new LeagueStandingsPanel(league));
-        d.pack();
-        d.setSize(500, 400);
-        d.setLocationRelativeTo(this);
-        d.setVisible(true);
-    }
-
-    /** Load a league + teams + players from an XML file (Jamare’s US). */
     private void loadLeagueFromXml() {
         JFileChooser chooser = new JFileChooser();
         int result = chooser.showOpenDialog(this);
@@ -281,6 +371,9 @@ public class AdminDashboardPanel extends JPanel {
             AppState appState = AppState.getInstance();
             appState.getLeagues().put(league.getName(), league);
 
+            // persist loaded league + its bracket if any
+            appState.save();
+
             JOptionPane.showMessageDialog(this,
                     "Loaded league \"" + league.getName() + "\" with " +
                             league.getTeams().size() + " teams.",
@@ -293,5 +386,159 @@ public class AdminDashboardPanel extends JPanel {
                     "Load Error",
                     JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void showGameStatsEditorDialog() {
+        String leagueName = JOptionPane.showInputDialog(this, "Enter League Name:");
+        if (leagueName == null || leagueName.isBlank()) return;
+
+        AppState appState = AppState.getInstance();
+        League league = appState.getLeagues().get(leagueName);
+        if (league == null) {
+            JOptionPane.showMessageDialog(this,
+                    "League \"" + leagueName + "\" not found.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (league.getGames().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "No games found for league \"" + leagueName + "\".",
+                    "No Games",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        java.util.List<Game> games = league.getGames();
+        Game selected = (Game) JOptionPane.showInputDialog(
+                this,
+                "Select a game:",
+                "Choose Game",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                games.toArray(),
+                games.get(0)
+        );
+        if (selected == null) return;
+
+        GameStatsController gsc = appState.getGameStatsController();
+
+        JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
+                "Edit Game Stats", Dialog.ModalityType.APPLICATION_MODAL);
+        d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        d.setContentPane(new GameStatsEditorPanel(league, selected, gsc));
+        d.setSize(900, 600);
+        d.setLocationRelativeTo(this);
+        d.setVisible(true);
+    }
+
+    private void showGameStatsReportDialog() {
+        String leagueName = JOptionPane.showInputDialog(this, "Enter League Name:");
+        if (leagueName == null || leagueName.isBlank()) return;
+
+        AppState appState = AppState.getInstance();
+        League league = appState.getLeagues().get(leagueName);
+        if (league == null) {
+            JOptionPane.showMessageDialog(this,
+                    "League \"" + leagueName + "\" not found.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (league.getGames().isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "No games found for league \"" + leagueName + "\".",
+                    "No Games",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        List<Game> games = league.getGames();
+        Game selected = (Game) JOptionPane.showInputDialog(
+                this,
+                "Select a game:",
+                "Choose Game",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                games.toArray(),
+                games.get(0)
+        );
+
+        if (selected == null) return;
+
+        JDialog d = new JDialog(SwingUtilities.getWindowAncestor(this),
+                "Game Stats Report", Dialog.ModalityType.APPLICATION_MODAL);
+        d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        d.setContentPane(new GameStatsReportPanel(selected, gameStatsController));
+        d.setSize(1000, 600);
+        d.setLocationRelativeTo(this);
+        d.setVisible(true);
+    }
+
+    private void showBracketManagerDialog() {
+        String leagueName = JOptionPane.showInputDialog(this, "Enter League Name:");
+        if (leagueName == null || leagueName.isBlank()) return;
+
+        AppState appState = AppState.getInstance();
+        League league = appState.getLeagues().get(leagueName);
+        if (league == null) {
+            JOptionPane.showMessageDialog(this,
+                    "League \"" + leagueName + "\" not found.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JDialog d = new JDialog(
+                SwingUtilities.getWindowAncestor(this),
+                "Bracket Manager — " + league.getName(),
+                Dialog.ModalityType.APPLICATION_MODAL
+        );
+
+        JTabbedPane tabs = new JTabbedPane();
+
+        // TAB 1: Bracket View
+        JTextArea bracketView = new JTextArea();
+        bracketView.setEditable(false);
+        bracketView.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        if (league.hasBracket()) {
+            bracketView.setText(league.getBracket().formatBracket());
+        } else {
+            bracketView.setText("No bracket has been scheduled yet.");
+        }
+
+        JScrollPane bracketScroll = new JScrollPane(bracketView);
+        tabs.addTab("Bracket View", bracketScroll);
+
+        // TAB 2: Bracket-only Record Results
+        BracketRecordResultPanel recordPanel =
+                new BracketRecordResultPanel(league.getName());
+
+        JButton refreshBracketBtn = new JButton("Refresh Bracket");
+        refreshBracketBtn.addActionListener(e ->
+                bracketView.setText(
+                        league.hasBracket()
+                                ? league.getBracket().formatBracket()
+                                : "No bracket has been scheduled yet.")
+        );
+
+        JPanel resultsWrapper = new JPanel(new BorderLayout());
+        resultsWrapper.add(recordPanel, BorderLayout.CENTER);
+        resultsWrapper.add(refreshBracketBtn, BorderLayout.SOUTH);
+
+        tabs.addTab("Record Results", resultsWrapper);
+
+        // TAB 3: Generate Bracket (top N teams, date, etc.)
+        BracketGeneratorPanel generatorPanel = new BracketGeneratorPanel(league);
+        tabs.addTab("Generate Bracket", generatorPanel);
+
+        d.setContentPane(tabs);
+        d.setSize(900, 600);
+        d.setLocationRelativeTo(this);
+        d.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        d.setVisible(true);
     }
 }
